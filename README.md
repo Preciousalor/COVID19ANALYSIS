@@ -54,39 +54,46 @@ order by PercentPopulationInfected desc
 
 ### Countries with Highest Death Count per Population
 
+```sql
 Select Location, MAX(cast(Total_deaths as int)) as TotalDeathCount
 From PortfolioProject..CovidDeaths
 --Where location like '%Germany%'
 Where continent is not null 
 Group by Location
 order by TotalDeathCount desc
+´´´
 
 
 
 ### BREAKING THINGS DOWN BY CONTINENT - Showing continents with the highest death count per population
 
+```Sql
 Select continent, MAX(cast(Total_deaths as int)) as TotalDeathCount
 From PortfolioProject..CovidDeaths
 --Where location like '%Germany%'
 Where continent is not null 
 Group by continent
 order by TotalDeathCount desc
+```
 
 
 
 ### GLOBAL NUMBERS
 
+```sql
 Select SUM(new_cases) as total_cases, SUM(cast(new_deaths as int)) as total_deaths, SUM(cast(new_deaths as int))/SUM(New_Cases)*100 as DeathPercentage
 From PortfolioProject..CovidDeaths
 --Where location like '%Germany%'
 where continent is not null 
 --Group By date
 order by 1,2
+```
 
 
 
-### Total Population vs Vaccinations - Shows Percentage of Population that has recieved at least one Covid Vaccine
+### Total Population vs Vaccinations - Shows the Percentage of the Population that has received at least one COVID vaccine
 
+```sql
 Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
 , SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
 --, (RollingPeopleVaccinated/population)*100
@@ -96,9 +103,11 @@ Join PortfolioProject..CovidVaccinations vac
 	and dea.date = vac.date
 where dea.continent is not null 
 order by 2,3
+```
 
 ### Using CTE to perform Calculation on Partition By in previous query
 
+```sql
 With PopvsVac (Continent, Location, Date, Population, New_Vaccinations, RollingPeopleVaccinated)
 as
 (
@@ -114,11 +123,12 @@ where dea.continent is not null
 )
 Select *, (RollingPeopleVaccinated/Population)*100
 From PopvsVac
-
+```
 
 
 ### Using Temp Table to perform Calculation on Partition By in previous query
 
+```sql
 DROP Table if exists #PercentPopulationVaccinated
 Create Table #PercentPopulationVaccinated
 (
@@ -140,15 +150,18 @@ Join PortfolioProject..CovidVaccinations vac
 	and dea.date = vac.date
 --where dea.continent is not null 
 --order by 2,3
+```
 
+```sql
 Select *, (RollingPeopleVaccinated/Population)*100
 From #PercentPopulationVaccinated
-
+```
 
 
 
 ### Creating View to store data for later visualizations
 
+```Sql
 Create View PercentPopulationVaccinated as
 Select dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations
 , SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
@@ -157,5 +170,6 @@ From PortfolioProject..CovidDeaths dea
 Join PortfolioProject..CovidVaccinations vac
 	On dea.location = vac.location
 	and dea.date = vac.date
-where dea.continent is not null 
+where dea.continent is not null
+```
 
